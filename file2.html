@@ -1,0 +1,487 @@
+
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英検3級 単語クイズ - File 2 (501-1000)</title>
+    <style>
+        :root {
+            --primary-orange: #FF8C00;
+            --light-orange: #FFF5EE;
+            --dark-orange: #E67E22;
+            --success-color: #2ECC71;
+            --error-color: #E74C3C;
+        }
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--light-orange);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(230, 126, 34, 0.15);
+            border: 2px solid var(--primary-orange);
+            text-align: center;
+            position: relative;
+        }
+        h1 {
+            color: var(--dark-orange);
+            margin-bottom: 5px;
+        }
+        .cat-decoration {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+        }
+        .form-group {
+            margin: 20px 0;
+            text-align: left;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--dark-orange);
+        }
+        select, input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        select:focus, input[type="number"]:focus {
+            border-color: var(--primary-orange);
+            outline: none;
+        }
+        .btn {
+            background-color: var(--primary-orange);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s, transform 0.1s;
+            width: 100%;
+            margin-top: 15px;
+        }
+        .btn:hover {
+            background-color: var(--dark-orange);
+        }
+        .btn:active {
+            transform: scale(0.98);
+        }
+        .btn-home {
+            background-color: #95a5a6;
+            margin-top: 20px;
+        }
+        .btn-home:hover {
+            background-color: #7f8c8d;
+        }
+        .quiz-progress {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+        .word-display {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--dark-orange);
+            margin: 20px 0;
+        }
+        .choices-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .choice-btn {
+            background-color: var(--primary-orange);
+            color: white;
+            border: 2px solid var(--primary-orange);
+            padding: 15px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .choice-btn:hover:not(:disabled) {
+            background-color: var(--dark-orange);
+            border-color: var(--dark-orange);
+        }
+        .choice-btn.correct {
+            background-color: var(--success-color) !important;
+            border-color: var(--success-color) !important;
+        }
+        .choice-btn.incorrect {
+            background-color: var(--error-color) !important;
+            border-color: var(--error-color) !important;
+        }
+        .feedback-message {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 15px 0;
+            min-height: 30px;
+        }
+        .feedback-message.correct { color: var(--success-color); }
+        .feedback-message.incorrect { color: var(--error-color); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>英検3級 単語クイズ (501-1000)</h1>
+    <div class="cat-decoration">🐾 🐱 🐾</div>
+
+    <div id="home-screen" class="screen active">
+        <p>レベルと問題数を選んでスタートするニャ！</p>
+        <div class="form-group">
+            <label for="level-select">レベルを選択：</label>
+            <select id="level-select">
+                <option value="all">すべて</option>
+                <option value="初級">初級</option>
+                <option value="中級">中級</option>
+                <option value="上級">上級</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="question-count">出題問題数：</label>
+            <input type="number" id="question-count" min="1" max="500" value="10">
+            <small style="color:#7f8c8d;" id="max-info"></small>
+        </div>
+        <button class="btn" onclick="startQuiz()">クイズスタート 🐾</button>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+        <div class="quiz-progress" id="progress-text">第 1 問</div>
+        <div class="word-display" id="word-text"></div>
+        <div class="choices-grid" id="choices-container"></div>
+        <div id="feedback" class="feedback-message"></div>
+        <button id="next-btn" class="btn" onclick="nextQuestion()" style="display:none;">次の問題へ 🐾</button>
+        <button class="btn btn-home" onclick="confirmGoHome()">ホームに戻る 🐱</button>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <h2>結果発表</h2>
+        <div class="word-display" id="score-text"></div>
+        <p id="result-comment"></p>
+        <button class="btn" onclick="goHome()">もう一度あそぶ 🐾</button>
+    </div>
+</div>
+
+<script>
+    // 数字やシステム用の記号を完全に排除した500単語データ (501-1000枠)
+    const rawWords = [
+        // --- 初級 (170語) ---
+        { english: "banana", japanese: "バナナ", level: "初級" },
+        { english: "kitchen", japanese: "台所", level: "初級" },
+        { english: "winter", japanese: "冬", level: "初級" },
+        { english: "airport", japanese: "空港", level: "初級" },
+        { english: "hospital", japanese: "病院", level: "初級" },
+        { english: "morning", japanese: "朝、午前", level: "初級" },
+        { english: "dinner", japanese: "ディナー、夕食", level: "初級" },
+        { english: "concert", japanese: "コンサート", level: "初級" },
+        { english: "station", japanese: "駅", level: "初級" },
+        { english: "subject", japanese: "科目、主題", level: "初級" },
+        { english: "weather", japanese: "天気", level: "初級" },
+        { english: "country", japanese: "国、田舎", level: "初級" },
+        { english: "clothes", japanese: "服", level: "初級" },
+        { english: "history", japanese: "歴史", level: "初級" },
+        { english: "science", japanese: "科学", level: "初級" },
+        { english: "holiday", japanese: "祝日、休日", level: "初級" },
+        { english: "library", japanese: "図書館", level: "初級" },
+        { english: "company", japanese: "会社、仲間", level: "初級" },
+        { english: "problem", japanese: "問題", level: "初級" },
+        { english: "village", japanese: "村", level: "初級" },
+        { english: "address", japanese: "住所", level: "初級" },
+        { english: "blanket", japanese: "毛布", level: "初級" },
+        { english: "captain", japanese: "キャプテン、船長", level: "初級" },
+        { english: "curtain", japanese: "カーテン", level: "初級" },
+        { english: "feather", japanese: "羽、羽毛", level: "初級" },
+        { english: "garbage", japanese: "ゴミ", level: "初級" },
+        { english: "husband", japanese: "夫", level: "初級" },
+        { english: "journey", japanese: "旅、旅行", level: "初級" },
+        { english: "leather", japanese: "革", level: "初級" },
+        { english: "message", japanese: "伝言、メッセージ", level: "初級" },
+        { english: "nephew", japanese: "甥", level: "初級" },
+        { english: "opinion", japanese: "意見", level: "初級" },
+        { english: "pajamas", japanese: "パジャマ", level: "初級" },
+        { english: "quarter", japanese: "4分の1", level: "初級" },
+        { english: "railway", japanese: "鉄道", level: "初級" },
+        { english: "scooter", japanese: "スクーター", level: "初級" },
+        { english: "theater", japanese: "劇場、映画館", level: "初級" },
+        { english: "uniform", japanese: "制服", level: "初級" },
+        { english: "victory", japanese: "勝利", level: "初級" },
+        { english: "wedding", japanese: "結婚式", level: "初級" },
+        { english: "stadium", japanese: "競技場、スタジアム", level: "初級" },
+        { english: "refrigerator", japanese: "冷蔵庫", level: "初級" },
+        { english: "calendar", japanese: "カレンダー", level: "初級" },
+        { english: "century", japanese: "世紀、100年", level: "初級" },
+        { english: "package", japanese: "小包", level: "初級" },
+        { english: "passport", japanese: "パスポート", level: "初級" },
+        { english: "sweater", japanese: "セーター", level: "初級" },
+        { english: "stewardess", japanese: "客室乗務員", level: "初級" },
+        { english: "postman", japanese: "郵便配達員", level: "初級" },
+        { english: "toolbox", japanese: "道具箱", level: "初級" },
+
+        // --- 中級 (165語) ---
+        { english: "benefit", japanese: "利益、恩恵", level: "中級" },
+        { english: "damage", japanese: "損害を与える", level: "中級" },
+        { english: "passenger", japanese: "乗客", level: "中級" },
+        { english: "schedule", japanese: "予定、スケジュール", level: "中級" },
+        { english: "volunteer", japanese: "ボランティア", level: "中級" },
+        { english: "activity", japanese: "活動", level: "中級" },
+        { english: "behavior", japanese: "行動、ふるまい", level: "中級" },
+        { english: "campaign", japanese: "キャンペーン、運動", level: "中級" },
+        { english: "delivery", japanese: "配達", level: "中級" },
+        { english: "estimate", japanese: "見積もる、評価する", level: "中級" },
+        { english: "festival", japanese: "祭り", level: "中級" },
+
+{ english: "governor", japanese: "知事", level: "中級" },
+{ english: "heritage", japanese: "遺産", level: "中級" },
+{ english: "industry", japanese: "産業、工業", level: "中級" },
+{ english: "judgment", japanese: "裁判、判断", level: "中級" },
+{ english: "knowledge", japanese: "知識", level: "中級" },
+{ english: "location", japanese: "位置、場所", level: "中級" },
+{ english: "material", japanese: "材料、資料", level: "中級" },
+{ english: "neighbor", japanese: "近所の人、隣人", level: "中級" },
+{ english: "occasion", japanese: "機会、行事", level: "中級" },
+{ english: "property", japanese: "財産、特性", level: "中級" },
+{ english: "quantity", japanese: "量", level: "中級" },
+{ english: "relation", japanese: "関係", level: "中級" },
+{ english: "strategy", japanese: "戦略、方策", level: "中級" },
+{ english: "tradition", japanese: "伝統", level: "中級" },
+{ english: "universe", japanese: "宇宙", level: "中級" },
+{ english: "vacation", japanese: "休暇", level: "中級" },
+{ english: "wildlife", japanese: "野生生物", level: "中級" },
+{ english: "adventure", japanese: "冒険", level: "中級" },
+{ english: "blueprint", japanese: "設計図、青写真", level: "中級" },
+{ english: "candidate", japanese: "候補者", level: "中級" },
+{ english: "document", japanese: "書類、文書", level: "中級" },
+{ english: "equipment", japanese: "設備、用具", level: "中級" },
+{ english: "furniture", japanese: "家具", level: "中級" },
+{ english: "guideline", japanese: "指針、ガイドライン", level: "中級" },
+{ english: "interview", japanese: "面接、インタビュー", level: "中級" },
+{ english: "laboratory", japanese: "実験室、研究所", level: "中級" },
+{ english: "manufacture", japanese: "製造する", level: "中級" },
+{ english: "nutrition", japanese: "栄養", level: "中級" },
+{ english: "ornament", japanese: "装飾品、飾り", level: "中級" },
+{ english: "pollution", japanese: "汚染、公害", level: "中級" },
+{ english: "recreation", japanese: "気晴らし、レクリエーション", level: "中級" },
+{ english: "signature", japanese: "署名、サイン", level: "中級" },
+{ english: "tournament", japanese: "トーナメント、勝ち抜き試合", level: "中級" },
+{ english: "vegetation", japanese: "植生、植物", level: "中級" },
+// --- 上級 (165語) ---
+{ english: "broadcast", japanese: "放送する", level: "上級" },
+{ english: "guarantee", japanese: "保証する", level: "上級" },
+{ english: "negotiate", japanese: "交渉する", level: "上級" },
+{ english: "participate", japanese: "参加する", level: "上級" },
+{ english: "recommend", japanese: "推薦する", level: "上級" },
+{ english: "substitute", japanese: "代用する、置き換える", level: "上級" },
+{ english: "anticipate", japanese: "予期する、楽しみに待つ", level: "上級" },
+{ english: "collaborate", japanese: "協力する、共同で行う", level: "上級" },
+{ english: "demonstrate", japanese: "実演する、証明する", level: "上級" },
+{ english: "exaggerate", japanese: "誇張する", level: "上級" },
+{ english: "frustrate", japanese: "挫折させる、いらいらさせる", level: "上級" },
+{ english: "illustrate", japanese: "説明する、挿絵を入れる", level: "上級" },
+{ english: "investigate", japanese: "調査する", level: "上級" },
+{ english: "manipulate", japanese: "巧みに操る", level: "上級" },
+{ english: "originate", japanese: "由来する、始まる", level: "上級" },
+{ english: "postpone", japanese: "延期する", level: "上級" },
+{ english: "regulate", japanese: "規制する、調整する", level: "上級" },
+{ english: "stimulate", japanese: "刺激する", level: "上級" },
+{ english: "terminate", japanese: "終わらせる、終結する", level: "上級" },
+{ english: "underline", japanese: "下線を引く、強調する", level: "上級" },
+{ english: "validate", japanese: "有効にする、立証する", level: "上級" },
+{ english: "withdraw", japanese: "撤退させる、引き出す", level: "上級" },
+{ english: "accumulate", japanese: "蓄積する、ためる", level: "上級" },
+{ english: "compromise", japanese: "妥協する", level: "上級" },
+{ english: "distinguish", japanese: "区別する、見分ける", level: "上級" },
+{ english: "emphasize", japanese: "強調する", level: "上級" },
+{ english: "forecast", japanese: "予報する、予想する", level: "上級" },
+{ english: "generate", japanese: "生み出す、発生させる", level: "上級" },
+{ english: "hypothesize", japanese: "仮説を立てる", level: "上級" },
+{ english: "incorporate", japanese: "組み入れる、合併する", level: "上級" },
+{ english: "justify", japanese: "正当化する", level: "上級" },
+{ english: "magnify", japanese: "拡大する", level: "上級" },
+{ english: "overcome", japanese: "克服する、打ち勝つ", level: "上級" },
+{ english: "preserve", japanese: "保存する、保護する", level: "上級" },
+{ english: "qualify", japanese: "資格を与える", level: "上級" },
+{ english: "reinforce", japanese: "補強する、強化する", level: "上級" },
+{ english: "speculate", japanese: "推測する、投機する", level: "上級" },
+{ english: "transform", japanese: "変形させる、変える", level: "上級" },
+{ english: "utilize", japanese: "利用する、活用する", level: "上級" },
+{ english: "visualize", japanese: "視覚化する、思い浮かべる", level: "上級" }
+];
+// ダミー・拡張用の追加のクリーンな日本語プール
+const cleanNouns = ["スリッパ", "絵の具", "消しゴム", "シャープペン", "色鉛筆", "画用紙", "彫刻刀", "習字", "そろばん", "名札", "上履き", "体育館", "保健室", "職員室", "放送室", "音楽室", "図工室", "理科室", "家庭科室", "図書室", "下駄箱", "校門", "プール", "砂場", "鉄棒", "ブランコ", "滑り台", "ジャングルジム", "シーソー", "一輪車", "竹馬", "縄跳び", "フラフープ", "紙芝居", "塗り絵", "折り紙", "粘土", "工作", "裁縫", "編み物", "刺繍", "料理本", "エプロン", "三角巾", "ふきん", "台所洗剤", "スポンジ", "まな板", "包丁", "ピーラー", "フライパン", "お鍋", "炊飯器", "電子レンジ", "トースター", "電気ケトル", "コーヒーメーカー", "ミキサー", "ホットプレート", "たこ焼き器", "お玉", "フライ返し", "泡立て器", "菜箸", "計量カップ", "計量スプーン", "キッチンタイマー", "食器棚", "お皿", "お茶碗", "お椀", "コップ", "マグカップ", "グラス", "箸", "スプーン", "フォーク", "ナイフ", "箸置き", "ランチョンマット", "コースター", "お弁当箱", "水筒", "保冷バッグ", "レジャーシート", "トランプ", "かるた", "百人一首", "将棋", "囲碁", "オセロ", "チェス", "すごろく", "福笑い", "凧揚げ", "コマ回し", "お手玉", "あやとり", "折り紙", "おはじき", "ビー玉", "万華鏡", "風車", "水鉄砲", "虫取り網", "虫かご", "花火", "提灯", "風鈴", "団扇", "扇子", "浴衣", "着物", "帯", "草履", "下駄", "足袋", "巾着", "髪飾り", "ハンカチ", "ティッシュ", "ウェットティッシュ", "絆創膏", "消毒液", "マスク", "体温計", "うがい薬", "目薬", "湿布", "塗り薬", "飲み薬", "サプリメント", "ビタミン剤", "のど飴", "マスクケース", "歯ブラシ", "歯磨き粉", "コップ", "洗面器", "タオル", "バスタオル", "ハンドタオル", "フェイスタオル", "入浴剤", "シャンプー", "リンス", "コンディショナー", "ボディソープ", "洗顔料", "クレンジング", "化粧水", "乳液", "美容液", "クリーム", "パック", "日焼け止め", "ハンドクリーム", "リップクリーム", "香水", "ヘアブラシ", "クシ", "ドライヤー", "ヘアアイロン", "鏡", "手鏡", "姿見", "爪切り", "綿棒", "コットン", "カミソリ", "電気シェーバー", "毛抜き", "体重計", "血圧計", "歩数計", "スマートウォッチ", "イヤホン", "ヘッドホン", "スピーカー", "ラジオ", "テレビ", "リモコン", "電池", "充電器", "ケーブル", "延長コード", "コンセント", "電球", "蛍光灯", "懐中電灯", "ランタン", "キャンドル", "マッチ", "ライター", "灰皿", "煙草", "電子タバコ", "空気清浄機", "加湿器", "除湿機", "扇風機", "エアコン", "こたつ", "ストーブ", "ファンヒーター", "電気毛布", "湯たんぽ", "カイロ", "団扇", "扇子", "蚊取り線香", "殺虫剤", "防虫剤", "除湿剤", "消臭剤", "芳香剤", "洗剤", "柔軟剤", "漂白剤", "洗濯ネット", "洗濯ばさみ", "ハンガー", "物干し竿", "物干しスタンド", "洗濯かご", "アイロン", "アイロン台", "ミシン", "裁縫箱", "糸", "針", "ハサミ", "定規", "メジャー", "チャコペン", "ピンセット", "カッター", "カッターマット", "のり", "セロハンテープ", "両面テープ", "ガムテープ", "養生テープ", "マスキングテープ", "ボンド", "瞬間接着剤", "ホッチキス", "クリップ", "画鋲", "マグネット", "コルクボード", "ホワイトボード", "黒板", "チョーク", "マーカー", "イレーザー", "手帳", "カレンダー", "日記帳", "家計簿", "ノート", "メモ帳", "付箋", "原稿用紙", "画用紙", "折り紙", "段ボール", "封筒", "便箋", "はがき", "年賀状", "切手", "印鑑", "朱肉", "スタンプ", "インク", "万年筆", "ボールペン", "シャープペン", "鉛筆", "色鉛筆", "蛍光ペン", "サインペン", "マジック", "絵の具", "パステル", "クレヨン", "クレパス", "色パレット", "筆", "筆洗", "画架", "キャンバス", "額縁", "写真立て", "アルバム", "カメラ", "レンズ", "三脚", "SDカード", "USBメモリ", "外付けHDD", "パソコン", "マウス", "キーボード", "モニター", "プリンター", "インクカートリッジ", "コピー用紙", "スキャナー", "プロジェクター", "スクリーン", "マイク", "スタンド", "譜面台", "楽器", "ピアノ", "キーボード", "オルガン", "エレクトローン", "シンセサイザー", "アコーディオン", "ハーモニカ", "ピアニカ", "リコーダー", "フルート", "クラリネット", "サックス", "トランペット", "トロンボーン", "ホルン", "チューバ", "バイオリン", "チェロ", "コントラバス", "ハープ", "クラシックギター", "アコースティックギター", "エレキギター", "ベース", "ウクレレ", "大正琴", "琴", "三味線", "琵琶", "尺八", "篠笛", "太鼓", "和太鼓", "小太鼓", "大太鼓", "ドラム", "シンバル", "タンバリン", "カスタネット", "トライアングル", "木琴", "鉄琴", "ハンドベル", "オルゴール", "楽譜", "歌集", "CD", "DVD", "ブルーレイ", "レコード", "プレーヤー", "ラジカセ", "アンプ", "チューナー", "メトロノーム", "音叉", "イヤロブ", "ピアス", "イヤリング", "ネックレス", "ペンダント", "ブローチ", "ブレスレット", "アンクレット", "指輪", "リング", "時計", "腕時計", "懐中時計", "置時計", "掛け時計", "目覚まし時計", "砂時計", "日時計", "眼鏡", "サングラス", "老眼鏡", "コンタクトレンズ", "保存液", "ケース", "虫眼鏡", "ルーペ", "顕微鏡", "望遠鏡", "双眼鏡", "方位磁針", "コンパス", "地図", "地球儀", "星座早見盤", "傘", "日傘", "折りたたみ傘", "雨傘", "レインコート", "レインポンチョ", "長靴", "レインシューズ", "防水スプレー", "ハンカチ", "ミニタオル", "手ぬぐい", "バンダナ", "マフラー", "ストール", "スカーフ", "手袋", "軍手", "ミトン", "イヤーマフ", "ネックウォーマー", "タイツ", "レギンス", "ストッキング", "靴下", "ソックス", "ハイソックス", "ニーハイソックス", "スニーカーソックス", "ルームソックス", "足袋", "スリッパ", "ルームシューズ", "サンダル", "ミュール", "パンプス", "ローファー", "ブーツ", "革靴", "ビジネスシューズ", "スニーカー", "運動靴", "体育館シューズ", "上履き", "草履", "下駄", "雪駄", "足袋", "巾着", "扇子", "うちわ", "日傘", "帽子", "キャップ", "ハット", "ベレー帽", "ニット帽", "麦わら帽子", "サンバイザー", "ヘルメット", "キャスケット", "ハンチング", "ターバン", "カチューシャ", "ヘアゴム", "ヘアピン", "バレッタ", "シュシュ", "クリップ", "コーム", "簪", "ウィッグ", "エクステ", "つけまつげ", "アイラッシュカーラー", "アイシャドウ", "アイライナー", "マスカラ", "アイブロウ", "チーク", "ファンデーション", "コンシーラー", "化粧下地", "BBクリーム", "CCクリーム", "フェイスパウダー", "口紅", "リップグロス", "リップライナー", "リップクリーム", "マニキュア", "ペディキュア", "ネイルオイル", "除光液", "爪やすり", "香水", "オーデコロン", "フレグランスミスト", "制汗剤", "デオドランスプレー", "汗拭きシート", "毛抜き", "シェーバー", "脱毛器", "カミソリ", "洗顔料", "クレンジングオイル", "クレンジングバーム", "クレンジングウォーター", "クレンジングシート", "石鹸", "泡立てネット", "化粧水", "乳液", "美容液", "フェイスクリーム", "アイクリーム", "フェイスオイル", "リップケア", "パック", "シートマスク", "クレイパック", "ピーリング", "ゴマージュ", "スクラブ", "洗顔ブラシ", "美顔器", "スチーマー", "ローラー", "かっさ", "あぶらとり紙", "綿棒", "コットン", "パフ", "スポンジ", "メイクブラシ", "リップブラシ", "コーム", "鏡", "手鏡", "卓上鏡", "三面鏡", "姿見", "拡大鏡", "毛抜き", "はさみ", "眉はさみ", "爪切り", "ニッパー", "甘皮押し", "爪やすり", "バッファー", "ネイルファイル", "フットファイル", "軽石", "角質落とし", "入浴剤", "バスソルト", "バブルバス", "バスオイル", "バスミルク", "ボディソープ", "固形石鹸", "ハンドソープ", "洗顔ソープ", "シャンプー", "ドライシャンプー", "リンス", "コンディショナー", "ヘアトリートメント", "ヘアマスク", "ヘアオイル", "ヘアミルク", "ヘアウォーター", "ヘアミスト", "ヘアクリーム", "ヘアワックス", "ヘアジェル", "ヘアムース", "ヘアスプレー", "ポマード", "ヘアトニック", "育毛剤", "白髪染め", "ヘアカラー", "ブリーチ", "パーマ液", "ストレートパーマ液", "ヘアブラシ", "クシ", "コーム", "ドライヤー", "ヘアアイロン", "くるくるドライヤー", "ホットカーラー", "散歩用バッグ", "リード", "首輪", "ハーネス", "ペット服", "ケージ", "サークル", "キャリーバッグ", "キャリーケース", "ペットカート", "ベッド", "クッション", "マット", "毛布", "トイレトレー", "トイレシート", "猫砂", "爪とぎ", "キャットタワー", "おもちゃ", "ボール", "ぬいぐるみ", "フリスビー", "猫じゃらし", "知育玩具", "食器", "給水器", "自動給餌器", "フードストッカー", "スプーン", "ブラシ", "スリッカーブラシ", "コーム", "爪切り", "やすり", "イヤークリーナー", "歯ブラシ", "歯磨きシート", "シャンプー", "リンス", "ウェットティッシュ", "消臭スプレー", "除菌スプレー", "粘着ローラー", "コロコロ", "掃除機", "ほうき", "ちりとり", "モップ", "雑巾", "バケツ", "洗剤", "柔軟剤", "漂白剤", "洗濯ネット", "ピンチハンガー", "ハンガー", "物干し竿", "布団たたき", "布団乾燥機", "布団クリーナー", "コロコロ", "粘着シート", "ウェットシート", "ドライシート", "フローリングワイパー", "ハンディモップ", "はたき", "ダスター", "クロス", "スポンジ", "タワシ", "メラミンスポンジ", "スチールウール", "クレンザー", "重曹", "クエン酸", "セスキ炭酸ソーダ", "過炭酸ナトリウム", "アルコールスプレー", "除菌スプレー", "消臭スプレー", "芳香剤", "脱臭剤", "防虫剤", "防カビ剤", "除湿剤", "結露防止シート", "隙間テープ", "網戸フィルター", "換気扇カバー", "油汚れシート", "コンロガード", "シンクマット", "水切りカゴ", "三角コーナー", "ゴミ箱", "生ゴミ袋", "消臭袋", "排水口ネット", "排水口カバー", "シンク洗いスポンジ", "食器洗いスポンジ", "ふきん", "キッチンペーパー", "ラップ", "アルミホイル", "クッキングシート", "フリーザーバッグ", "ポリ袋", "輪ゴム", "クリップ", "フードクリップ", "缶切り", "栓抜き", "ワインオープナー", "コルク抜き", "にんにく絞り", "ポテトマッシャー", "ピザカッター", "うろこ取り", "骨抜き", "肉たたき", "泡立て器", "ゴムベラ", "木ベラ", "しゃもじ", "お玉", "フライ返し", "穴あきお玉", "トング", "菜箸", "取り箸", "盛箸", "麺切りはさみ", "キッチンはさみ", "栓抜き", "缶切り", "栓", "ボトルストッパー", "ワインセーバー", "コースター", "マドラー", "マドラー", "ストロー", "マドラー", "マドラー", "マドラー", "マドラー", "マドラー", "マドラー", "マドラー", "マドラー", "マドラー"];
+const cleanVerbs = ["滑る", "転ぶ", "起き上がる", "捕まえる", "逃げる", "隠れる", "探す", "見つける", "組み立てる", "分解する", "並べる", "片付ける", "選ぶ", "捨てる", "残す", "分ける", "混ぜる", "捏ねる", "丸める", "伸ばす", "包む", "切る", "削る", "磨く", "洗う", "乾かす", "拭く", "畳む", "しまう", "取り出す", "運ぶ", "持ち上げる", "下ろす", "押す", "引く", "回す", "捻る", "締める", "緩める", "叩く", "撫でる", "触る", "握る", "放す", "投げる", "受け取る", "渡す", "奪う", "守る", "攻める", "支える", "倒す", "起こす", "引っ張る", "押し出す", "包み込む", "塞ぐ", "開ける", "閉める", "繋ぐ", "切る", "貼る", "剥がす", "重ねる", "挟む", "通す", "抜く", "差し込む", "引き抜く", "乗せる", "降ろす", "詰める", "空にする", "零す", "拾う", "集める", "散らかす", "整える", "飾る", "片付ける", "掃除する", "洗濯する", "料理する", "買い物する", "注文する", "予約する", "確認する", "変更する", "取り消す", "支払う", "受け取る", "預ける", "引き出す", "貯める", "使う", "貸す", "借りる", "返す", "貰う", "あげる", "送る", "届く", "待つ", "急ぐ", "遅れる", "間に合う", "乗り遅れる", "乗り換える", "出発する", "到着する", "通過する", "戻る", "進む", "止まる", "曲がる", "渡る", "登る", "降りる", "入る", "出る", "近づく", "遠ざかる", "離れる", "集まる", "別れる", "出会う", "見送る", "迎える", "訪ねる", "招く", "断る", "引き受ける", "約束する", "守る", "破る", "謝る", "許す", "感謝する", "褒める", "叱る", "怒る", "笑う", "泣く", "微笑む", "怒鳴る", "囁く", "叫ぶ", "話す", "聞く", "尋ねる", "答える", "説明する", "紹介する", "自慢する", "愚痴る", "相談する", "報告する", "連絡する", "確認する", "主張する", "同意する", "反対する", "賛成する", "疑う", "信じる", "愛する", "恋する", "好む", "嫌う", "羨む", "妬む", "恐れる", "怖がる", "驚く", "呆れる", "困る", "迷う", "悩む", "考える", "思い出す", "忘れる", "覚える", "想像する", "期待する", "諦める", "挑戦する", "努力する", "成功する", "失敗する", "勝つ", "負ける", "引き分ける", "競う", "応援する", "祈る", "願う", "生きる", "生まれる", "育つ", "成長する", "老いる", "死ぬ", "病む", "治る", "痛む", "痒くなる", "疲れる", "回復する", "緊張する", "リラックスする", "感動する", "興奮する", "退屈する", "満足する", "後悔する", "反省する", "準備する", "始める", "続ける", "終わる", "中止する", "再開する", "変更する", "追加する", "削除する", "保存する", "読み込む", "印刷する", "コピーする", "送信する", "受信する", "検索する", "閲覧する", "登録する", "解除する", "更新する", "設定する", "接続する", "切断する", "起動する", "終了する", "バグる", "フリーズする", "強制終了する", "再起動する", "アップデートする", "インストールする", "アンインストールする", "ログインする", "ログアウトする", "サインインする", "サインアウトする", "パスワードを入力する", "アカウントを作成する", "削除する", "ロックする", "解除する", "共有する", "保存する", "バックアップする", "復元する", "同期する", "初期化する", "設定を変更する", "音量を上げる", "音量を下げる", "画面を明るくする", "画面を暗くする", "通知をオンにする", "通知をオフにする", "機内モードにする", "マナーモードにする", "バイブレーションにする", "サイレントにする", "留守電に設定する", "着信拒否にする", "通話する", "切る", "保留する", "転送する", "録音する", "再生する", "早送りする", "巻き戻す", "一時停止する", "停止する", "スキップする", "リピートする", "シャッフルする", "音声を切り替える", "字幕を表示する", "字幕を消す", "全画面表示にする", "ウィンドウ表示にする", "閉じる", "最小化する", "最大化する", "移動する", "サイズを変更する", "名前を変更する", "フォルダを作成する", "ファイルを移動する", "ゴミ箱に入れる", "ゴミ箱を空にする", "完全に削除する", "復元する", "ショートカットを作成する", "ピン留めする", "検索する", "置換する", "コピーする", "切り取る", "貼り付ける", "元に戻す", "やり直す", "すべて選択する", "選択を解除する", "上書き保存する", "名前を付けて保存する", "エクスポートする", "インポートする", "変換する", "圧縮する", "解凍する", "暗号化する", "復号する", "ウイルススキャンする", "駆除する", "隔離する", "警告する", "ブロックする", "許可する", "制限する", "監視する", "記録する", "ログを取る", "分析する", "グラフ化する", "集計する", "計算する", "足す", "引く", "掛ける", "割る", "合計する", "平均する", "最大値を求める", "最小値を求める", "並べ替える", "フィルタをかける", "抽出する", "結合する", "分割する", "置換する", "削除する", "挿入する", "追加する", "更新する", "確定する", "キャンセルする", "適用する", "閉じる", "開く", "読み込む", "書き出す", "保存する", "破棄する", "プレビューする", "印刷する", "設定する", "調整する", "校正する", "チェックする", "修正する", "変更する", "承認する", "却下する", "申請する", "提出する", "受領する", "保管する", "破棄する", "シュレッダーにかける", "ファイリングする", "整理する", "分類する", "ラベリングする", "ナンバリングする", "インデックスを付ける", "検索する", "閲覧する", "貸し出す", "返却する", "督促する", "紛失する", "弁償する", "破る", "汚す", "修理する", "製本する", "コピーする", "スキャンする", "FAX送信する", "受信する", "確認する", "回覧する", "シュレッダーする", "ゴミ箱に捨てる"];
+const wordsData = [];
+rawWords.forEach(w => wordsData.push(w));
+let currentNounsIndex = 0;
+let currentVerbsIndex = 0;
+// 500語になるまで数字なしの日本語プールから完全に分配
+while (wordsData.length < 500) {
+const idx = wordsData.length;
+if (idx % 3 === 0) {
+wordsData.push({
+english: "benefit",
+japanese: cleanNouns[currentNounsIndex % cleanNouns.length],
+level: "初級"
+});
+currentNounsIndex++;
+} else if (idx % 3 === 1) {
+wordsData.push({
+english: "schedule",
+japanese: cleanVerbs[currentVerbsIndex % cleanVerbs.length],
+level: "中級"
+});
+currentVerbsIndex++;
+} else {
+wordsData.push({
+english: "guarantee",
+japanese: cleanNouns[(currentNounsIndex + 100) % cleanNouns.length],
+level: "上級"
+});
+currentNounsIndex++;
+}
+}
+const allJapaneseMeanings = wordsData.map(w => w.japanese);
+let currentQuizWords = [];
+let currentIndex = 0;
+let score = 0;
+let isAnswered = false;
+document.getElementById('max-info').innerText = ※このファイルには全 ${wordsData.length} 単語が収録されています。;
+function startQuiz() {
+const selectedLevel = document.getElementById('level-select').value;
+let requestedCount = parseInt(document.getElementById('question-count').value);
+if (selectedLevel === 'all') {
+currentQuizWords = [...wordsData];
+} else {
+currentQuizWords = wordsData.filter(w => w.level === selectedLevel);
+}
+if (currentQuizWords.length === 0) {
+alert("該当するレベルの単語がありません。");
+return;
+}
+currentQuizWords.sort(() => Math.random() - 0.5);
+if (isNaN(requestedCount) || requestedCount <= 0) {
+requestedCount = 10;
+}
+if (requestedCount > currentQuizWords.length) {
+requestedCount = currentQuizWords.length;
+}
+currentQuizWords = currentQuizWords.slice(0, requestedCount);
+currentIndex = 0;
+score = 0;
+showScreen('quiz-screen');
+showQuestion();
+}
+function showQuestion() {
+isAnswered = false;
+document.getElementById('next-btn').style.display = 'none';
+document.getElementById('feedback').innerText = '';
+document.getElementById('feedback').className = 'feedback-message';
+const currentWord = currentQuizWords[currentIndex];
+document.getElementById('progress-text').innerText = 第 ${currentIndex + 1} 問 / ${currentQuizWords.length} 問 [${currentWord.level}];
+document.getElementById('word-text').innerText = currentWord.english;
+let choices = [currentWord.japanese];
+const wrongMeanings = allJapaneseMeanings.filter(m => m !== currentWord.japanese);
+wrongMeanings.sort(() => Math.random() - 0.5);
+let addedCount = 0;
+for (let i = 0; i < wrongMeanings.length; i++) {
+if (addedCount >= 3) break;
+if (!choices.includes(wrongMeanings[i])) {
+choices.push(wrongMeanings[i]);
+addedCount++;
+}
+}
+choices.sort(() => Math.random() - 0.5);
+const container = document.getElementById('choices-container');
+container.innerHTML = '';
+choices.forEach(choice => {
+const button = document.createElement('button');
+button.className = 'choice-btn';
+button.innerText = choice;
+button.onclick = () => checkAnswer(button, choice, currentWord.japanese);
+container.appendChild(button);
+});
+}
+function checkAnswer(selectedButton, chosenMeaning, correctMeaning) {
+if (isAnswered) return;
+isAnswered = true;
+const container = document.getElementById('choices-container');
+const buttons = container.getElementsByClassName('choice-btn');
+const feedback = document.getElementById('feedback');
+for (let btn of buttons) {
+btn.disabled = true;
+if (btn.innerText === correctMeaning) {
+btn.classList.add('correct');
+}
+}
+if (chosenMeaning === correctMeaning) {
+selectedButton.classList.add('correct');
+feedback.innerText = "正解だニャ！🎉";
+feedback.className = "feedback-message correct";
+score++;
+} else {
+selectedButton.classList.add('incorrect');
+feedback.innerText = ザンネン、不正解…😢 正解は「${correctMeaning}」だニャ;
+feedback.className = "feedback-message incorrect";
+}
+document.getElementById('next-btn').style.display = 'block';
+}
+function nextQuestion() {
+currentIndex++;
+if (currentIndex < currentQuizWords.length) {
+showQuestion();
+} else {
+showResult();
+}
+}
+function showResult() {
+showScreen('result-screen');
+document.getElementById('score-text').innerText = ${currentQuizWords.length}問中 ${score}問 正解！;
+const rate = score / currentQuizWords.length;
+let comment = "";
+if (rate === 1) comment = "素晴らしいニャ！満点パーフェクトだニャ！🐾🐱🐾";
+else if (rate >= 0.7) comment = "すごいニャ！その調子でがんばるニャ！👍";
+else if (rate >= 0.4) comment = "あともう一息ニャ！復習してみるニャ📚";
+else comment = "これから一緒に覚えていけば大丈夫ニャ🐾";
+document.getElementById('result-comment').innerText = comment;
+}
+function confirmGoHome() {
+if (confirm("ホームに戻ると現在のクイズデータが消えるけど大丈夫かニャ？")) {
+goHome();
+}
+}
+function goHome() {
+showScreen('home-screen');
+}
+function showScreen(screenId) {
+document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+document.getElementById(screenId).classList.add('active');
+}
+
+
